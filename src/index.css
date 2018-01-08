@@ -30,7 +30,57 @@ body {
   left: 0;
 
 }
+/*--- score board --- */
+.scoreboard {
+	overflow: hidden;
+	font-size: 30px;
+	line-height: 40px;
+	position: absolute;
+	background: white;
+	height: 40px;
+	width: 600px;
+	margin: auto;
+	top: -1050px;
+  right: 0;
+  bottom: 0;
+  left: 0;
 
+}
+.score-X {
+	border-right: 4px solid black;
+}
+.score-O {
+	border-left: 4px solid black;
+}
+.player-score {
+	float: right;
+}
+/*----end scoreboard----*/
+
+/*--- reset button ---*/
+.reset-btn button {
+	margin: none;
+	text-decoration: none;
+	font-size: 20px;
+	position: absolute;
+	height: 40px;
+	width: 100px;
+	margin: auto;
+	top: -950px;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  border: none;
+}
+.reset-btn button:hover {
+	background: red;
+	color: white;
+	font-weight: bold;
+	box-shadow: none;
+}
+/*--- end reset button --- */
+
+/*--- squares ---*/
 .square {
 	vertical-align: top;
 	font-size: 0;
@@ -57,3 +107,4 @@ body {
 	top: 50%;
 	transform: translateY(-50%);
 }
+/*--- end squares ---*/
