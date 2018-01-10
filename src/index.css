@@ -55,6 +55,9 @@ body {
 .player-score {
 	float: right;
 }
+.score-X:hover, .score-O:hover {
+	box-shadow: inset 0 0 0 1px #C1CFDA, inset 0 0 20px #193047; 
+}
 /*----end scoreboard----*/
 
 /*--- reset button ---*/
