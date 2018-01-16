@@ -19,9 +19,9 @@ ____________
   2. Select Game difficulty (default Hard) by clicking the top right drop down menu
   
   3. Once game is finished you have the options of Clear or New Game
-    1. New Game 
-      starts all over again, scores are reset and player must pick a symbol X or O
-    2. clear
-      resets game board
+   * New Game 
+      * starts all over again, scores are reset and player must pick a symbol X or O
+   * Clear
+      * resets game board
 
  *[Binh Khuu](https://github.com/spoonable)*
