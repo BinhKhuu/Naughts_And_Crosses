@@ -67,8 +67,7 @@ class Board extends React.Component {
 	handleClick(i) {
 		if(this.state.player === '') alert('select X or O');
 		else if(!this.state.gameOver){	
-			if(this.state.game[i] === 'X' || this.state.game[i] === 'O') {			
-			} else {
+			if(this.state.game[i] !== 'X' || this.state.game[i] !== 'O') {			
 				var player = this.state.player;
 				var game = update(this.state.game, {$splice:[[i,1,player]]});	
 				var win = this.checkWinner(game,player);
@@ -196,13 +195,14 @@ class Board extends React.Component {
 	setDifficutly(mode) {
 		this.setState({difficulty:mode});
 	}
+	
 	render () {
 		var xHighlight = (this.state.player === 'X') ? 'inset 0 0 0 1px #C1CFDA, inset 0 0 20px #193047' : '';
 		var oHighlight = (this.state.player === 'O') ? 'inset 0 0 0 1px #C1CFDA, inset 0 0 20px #193047' : '';
 		var freeSquares = this.emptyIndexies(this.state.game.slice(0));
 		var resetDisplay = (this.state.gameOver || freeSquares.length === 0) ? ' ' : 'none';
 		var difficutly = '';
-		var color = ''
+		var color = '';
 		switch (this.state.difficulty) {
 			case 2:
 				difficutly = 'Easy';
@@ -213,6 +213,10 @@ class Board extends React.Component {
 				color = 'warning';
 				break;
 			case 9: 
+				difficutly = 'Hard';
+				color = 'danger';
+				break;
+			default:
 				difficutly = 'Hard';
 				color = 'danger';
 				break;
