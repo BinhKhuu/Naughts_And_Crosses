@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import update from 'immutability-helper';
-import './index.css'
+import './index.css';
+import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
 class Squares extends React.Component {
 	render () {
@@ -26,14 +27,16 @@ class Board extends React.Component {
 			winRow: Array(3).fill(null),
 			score: Array(2).fill(0,0),
 			player: '',
-			player2: '',
 			computer: '',
-			difficulty: 10
+			difficulty: 9,
+			dropdownOpen: false,
 		}
 		this.handleClick = this.handleClick.bind(this);
 		this.resetGame = this.resetGame.bind(this);
 		this.setPlayer = this.setPlayers.bind(this);
 		this.setDifficutly = this.setDifficutly.bind(this);
+		this.diffToggle = this.diffToggle.bind(this);
+		this.newGame = this.newGame.bind(this);
 	}
 	checkWinner(game,player) {
 		var win = {winner:false,winRow:null};
@@ -46,6 +49,12 @@ class Board extends React.Component {
 		else if(player === game[1] && player === game[4] && player === game[7] ) win = {winner:true,winRow:[1,4,7]};
 		else if(player === game[2] && player === game[5] && player === game[8] ) win = {winner:true,winRow:[2,5,8]};
 		return win;		
+	}
+
+	diffToggle() {
+		this.setState({
+			dropdownOpen: !this.state.dropdownOpen
+		});
 	}
 
 	updateScore(player){
@@ -61,17 +70,16 @@ class Board extends React.Component {
 			if(this.state.game[i] === 'X' || this.state.game[i] === 'O') {			
 			} else {
 				var player = this.state.player;
-				var nextPlayer = (player === 'X') ? 'O' : 'X';
 				var game = update(this.state.game, {$splice:[[i,1,player]]});	
 				var win = this.checkWinner(game,player);
 				if(win.winner) {
 					var score = this.updateScore(player);
-					this.setState({game:game, gameOver: true, winRow: win.winRow, score: score, player: 'nextPlayer'})
+					this.setState({game:game, gameOver: true, winRow: win.winRow, score: score})
 				} else {
-					this.setState({game:game, player: nextPlayer},()=>{
+					this.setState({game:game},()=>{
 						var freeSquares = this.emptyIndexies(this.state.game.slice(0))
 						if(freeSquares.length > 0) {
-							this.computerTurn(game.slice(0),nextPlayer,this.state.difficulty);
+							this.computerTurn(game.slice(0),this.state.difficulty);
 						}					
 					});
 				}
@@ -82,7 +90,7 @@ class Board extends React.Component {
 	setPlayers(player) {
 		if(this.state.computer === '') {
 			var game = this.state.game.slice(0);
-			var computer = (player === 'O') ? 'O' : 'X';
+			var computer = (player === 'O') ? 'X' : 'O';
 			//X is always first , generate move if player is O
 			if(player === 'O') {
 				var compMove = this.minmax(game,'X',this.state.difficulty);
@@ -92,17 +100,15 @@ class Board extends React.Component {
 		}
 	}
 
-	computerTurn(game,player,depth) {
-		var move = this.minmax(game.slice(0),player,depth);
-		game[move.index] = player;
-		var nextPlayer = (player === 'X') ? 'O' : 'X';
-		var score = this.updateScore(player);
-		var win = this.checkWinner(game,player);
+	computerTurn(game,depth) {
+		var move = this.minmax(game.slice(0),this.state.computer,depth);
+		game[move.index] = this.state.computer;
+		var score = this.updateScore(this.state.computer);
+		var win = this.checkWinner(game,this.state.computer);
 		if(win.winner) {
-			score = this.updateScore(player);
-			this.setState({game:game, gameOver: true, winRow: win.winRow, score: score, player: nextPlayer})
+			this.setState({game:game, gameOver: true, winRow: win.winRow, score: score})
 		} else {
-			this.setState({game:game, player: nextPlayer});			
+			this.setState({game:game});			
 		}
 	}
 
@@ -133,20 +139,32 @@ class Board extends React.Component {
 		}
 		var bestMove;
 		var bestScore;
+		var random = Math.floor((Math.random() *2)+1);
 		if(player === 'O') {
 			bestScore = -10000;
 			for(i = 0; i < moves.length; i++) {
-				if(moves[i].score > bestScore) {
-					bestScore = moves[i].score;
-					bestMove = i;
+				if(moves[i].score === bestScore) {
+					//if moves generate same score pick one at random
+					if(random === 2) {
+						bestScore = moves[i].score;
+						bestMove = i;
+					}
+				} else if (moves[i].score > bestScore) {
+						bestScore = moves[i].score;
+						bestMove = i;
 				}
 			}
 		} else {
 			bestScore = 10000;
 			for(i = 0; i < moves.length; i++) {
-				if(moves[i].score < bestScore) {
-					bestScore = moves[i].score;
-					bestMove = i;
+				if(moves[i].score === bestScore) {
+					if(random === 2) {
+						bestScore = moves[i].score;
+						bestMove = i;
+					}
+				} else if (moves[i].score < bestScore) {
+						bestScore = moves[i].score;
+						bestMove = i;
 				}
 			}
 		}
@@ -161,14 +179,20 @@ class Board extends React.Component {
 		var newGame = [0,1,2,3,4,5,6,7,8];
 		var winRow = Array(3).fill(null);
 		//X is always first generate move for X if player is O
-		if(this.state.computer === 'O') {
+		if(this.state.computer === 'X') {
 			var compMove = this.minmax(newGame,'X',this.state.difficulty);
 			newGame[compMove.index] = 'X';	
-			this.setState({game: newGame, gameOver: false, winRow: winRow});
-		} else {
-			this.setState({game: newGame, gameOver: false, winRow: winRow, player: 'X'});
-		}		
+		} 
+		this.setState({game: newGame, gameOver: false, winRow: winRow});	
 	}
+
+	newGame() {
+		var newGame = [0,1,2,3,4,5,6,7,8];
+		var winRow = Array(3).fill(null);
+		var score = Array(2).fill(0,0);
+		this.setState({game: newGame, gameOver: false, winRow: winRow, score: score, player: '', computer: ''});	
+	}
+
 	setDifficutly(mode) {
 		this.setState({difficulty:mode});
 	}
@@ -177,19 +201,46 @@ class Board extends React.Component {
 		var oHighlight = (this.state.player === 'O') ? 'inset 0 0 0 1px #C1CFDA, inset 0 0 20px #193047' : '';
 		var freeSquares = this.emptyIndexies(this.state.game.slice(0));
 		var resetDisplay = (this.state.gameOver || freeSquares.length === 0) ? ' ' : 'none';
-		if(freeSquares.length === 0 && !this.state.gameOver) {
-			alert('Draw!');
+		var difficutly = '';
+		var color = ''
+		switch (this.state.difficulty) {
+			case 2:
+				difficutly = 'Easy';
+				color = 'success';
+				break;
+			case 3:
+				difficutly = "Medium";
+				color = 'warning';
+				break;
+			case 9: 
+				difficutly = 'Hard';
+				color = 'danger';
+				break;
 		}
 		return (	
 			<div className='container-fluid background'>
+	      <Dropdown size='lg' isOpen={this.state.dropdownOpen} toggle={this.diffToggle}>
+	        <DropdownToggle className='diff-drop' color={color} caret>{difficutly}</DropdownToggle>
+	        <DropdownMenu style={{background:'black'}}>
+	          <DropdownItem style={{color:'green'}} onClick={()=> this.setDifficutly(2)}>Easy</DropdownItem>
+	          <DropdownItem style={{color:'orange'}} onClick={()=> this.setDifficutly(3)}>Medium</DropdownItem>
+	          <DropdownItem style={{color:'red'}} onClick={()=> this.setDifficutly(9)}>Hard</DropdownItem>
+	        </DropdownMenu>
+	      </Dropdown>
 				<div className='scoreboard row'>
-					<div className='col-md-6 score-X' onClick={() => this.setPlayers('X')} style={{background:'red',boxShadow:xHighlight}}><span>X</span><span className='player-score'>{(this.state.score[0] === 0) ? '-' : this.state.score[0]}</span></div>
-					<div className='col-md-6 score-O' onClick={() => this.setPlayers('O')} style={{background:'yellow',boxShadow:oHighlight}}><span>O</span><span className='player-score'>{(this.state.score[1] === 0) ? '-' : this.state.score[1]}</span></div>
+					<div className='col-md-6 score-X' onClick={() => this.setPlayers('X')} style={{background:'red',boxShadow:xHighlight}}>
+						<span>X</span>
+						<span className='player-score'>{(this.state.score[0] === 0) ? '-' : this.state.score[0]}</span>
+					</div>
+					<div className='col-md-6 score-O' onClick={() => this.setPlayers('O')} style={{background:'yellow',boxShadow:oHighlight}}>
+						<span>O</span>
+						<span className='player-score'>{(this.state.score[1] === 0) ? '-' : this.state.score[1]}</span>
+					</div>
 				</div>
-				<div className='reset-btn' style={{display:resetDisplay}}><button onClick={this.resetGame}>reset</button></div>
-				<div className='diff-btn' ><button onClick={()=> this.setDifficutly(2)}>Easy</button></div>
-				<div className='diff-btn' ><button onClick={()=> this.setDifficutly(3)}>Medium</button></div>
-				<div className='diff-btn' ><button onClick={()=>this.setDifficutly(9)}>Hard</button></div>
+				<div className='row game-btns' style={{display:resetDisplay}}>
+					<button className='col-md-6 reset-btn' onClick={this.resetGame}>Clear Board</button>
+					<button className='col-md-6 new-btn' onClick={this.newGame}>New Game</button>
+				</div>
 				<div className='board'>
 				{this.state.game.map((x,i)=>{
 					return <Squares key={'square-'+ i} num={i} handleClick={()=> this.handleClick(i)} value={this.state.game[i]} winRow={this.state.winRow}  />

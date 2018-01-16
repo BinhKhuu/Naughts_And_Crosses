@@ -44,7 +44,6 @@ body {
   right: 0;
   bottom: 0;
   left: 0;
-
 }
 .score-X {
 	border-right: 4px solid black;
@@ -60,28 +59,47 @@ body {
 }
 /*----end scoreboard----*/
 
-/*--- reset button ---*/
-.reset-btn button {
+/*--- reset and new game button ---*/
+.game-btns {
 	margin: none;
 	text-decoration: none;
 	font-size: 20px;
 	position: absolute;
 	height: 40px;
-	width: 100px;
+	width: 400px;
 	margin: auto;
 	top: -950px;
   right: 0;
   bottom: 0;
   left: 0;
-  border: none;
+  border:none;
 }
-.reset-btn button:hover {
+
+.reset-btn {
+	color: white;
+	background: green;
+	border: none;
+	border-right: 4px solid black
+}
+.reset-btn:hover {
+	background: green;
+	color: white;
+	font-weight: bold;
+	box-shadow: none;
+}
+.new-btn{
+	color: white;
+	background: red;
+	border: none;
+	border-left: 4px solid black;
+}
+.new-btn:hover {
 	background: red;
 	color: white;
 	font-weight: bold;
 	box-shadow: none;
 }
-/*--- end reset button --- */
+/*--- end reset and newgame button --- */
 
 /*--- squares ---*/
 .square {
@@ -111,3 +129,7 @@ body {
 	transform: translateY(-50%);
 }
 /*--- end squares ---*/
+
+.diff-drop {
+	margin-top: 10px;
+}
