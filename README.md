@@ -10,8 +10,10 @@ ____________
   3. Node package manager
 #### Install:
   1. git clone or download https://github.com/spoonable/Camp_Leaderboard
-  2. run npm start
-  3. go to local host:3000
+  2. npm rm -rf node_modules
+  3. npm install
+  4. run npm start
+  5. go to local host:3000
 
 #### Game Instructions:
   * Select who you want to be ( X or O ) by clicking on the red X bar or yellow O bar
