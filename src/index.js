@@ -4,19 +4,44 @@ import update from 'immutability-helper';
 import './index.css';
 import { Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
+/* Individual Square on a naught and crosses game board
+ * @props.value, " " or X or O to display on square
+ * @props.winRow, index of row that has winning combination (three X or O in a row)
+                  used to highlight that square
+ * @props.num, index of the square (current)
+ */
+
 class Squares extends React.Component {
 	render () {
 		var bgColor = 'white';
 		var value = (this.props.value === 'X' || this.props.value === 'O') ? this.props.value : ' ';
 		if(this.props.winRow.includes(this.props.num)) bgColor = (this.props.value === 'X') ? 'red' : 'yellow';
 		return (
-			<div className='square' onClick={this.props.handleClick} style={{background: bgColor}}>
-				<div className='sq-val'><h1>{value}</h1></div>
-			</div>
+            <div 
+                className='square' 
+                onClick={this.props.handleClick} 
+                style={{background: bgColor}}
+            >
+                <div className='sq-val'>
+                    <h1>{value}</h1>
+                </div>
+            </div>
 		)
 	}
 }
-
+/* Individual Square on a naught and crosses game board
+ * @state.game, Array holding current game information
+                index 1 = [0,0], index 2 = [0,1] etc
+ * @state.gameOver, boolean flag check if game is finished
+ * @state.value, " " or X or O to display on square
+ * @state.score, Score for current session (wins) 
+ * @state.winRow, index of row that has winning combination (three X or O in a row)
+                  used to highlight that square
+ * @state.player, player Symbol X or O (default X)
+ * @difficutly, difficulty of AI
+ * @state.computer, AI symbol (default O)
+ * @state.dropdownOPen, toggle for difficutly dropdown menu
+ */
 class Board extends React.Component {
 	constructor() {
 		super();
@@ -26,8 +51,8 @@ class Board extends React.Component {
 			gameOver: false,
 			winRow: Array(3).fill(null),
 			score: Array(2).fill(0,0),
-			player: '',
-			computer: '',
+			player: 'X',
+			computer: 'O',
 			difficulty: 9,
 			dropdownOpen: false,
 		}
@@ -38,6 +63,12 @@ class Board extends React.Component {
 		this.diffToggle = this.diffToggle.bind(this);
 		this.newGame = this.newGame.bind(this);
 	}
+
+    /* checks if the current player has won the game
+     * @game, current game board with position of play/ai moves
+     * @player, symbol (X / O) represents the player we are checking  
+     * @return, boolean true = winner, false = no winner 
+     */
 	checkWinner(game,player) {
 		var win = {winner:false,winRow:null};
 		if(player === game[0] && player === game[1] && player === game[2] ) win = win = {winner:true,winRow:[0,1,2]};
@@ -57,6 +88,10 @@ class Board extends React.Component {
 		});
 	}
 
+    /* updates score for each player at end of game
+     * @player,symbol (X / O) represents the player we are checking 
+     * @return, integer score for @player
+     */
 	updateScore(player){
 		var scoreIndex = (player === 'X') ? 0 : 1;
 		var score = [this.state.score[0],this.state.score[1]];
@@ -64,6 +99,9 @@ class Board extends React.Component {
 		return score;
 	}
 
+    /* updates score for each player at end of game
+     * @i, index location of clicked square
+     */    
 	handleClick(i) {
 		if(this.state.player === '') alert('select X or O');
 		else if(!this.state.gameOver){	
@@ -85,7 +123,9 @@ class Board extends React.Component {
 			}
 		}
 	}
-
+    /* sets symbol (X / O ) for AI and user
+     * @player,symbol (X / O) represents the player we are checking  
+     */
 	setPlayers(player) {
 		if(this.state.computer === '') {
 			var game = this.state.game.slice(0);
@@ -98,7 +138,10 @@ class Board extends React.Component {
 			this.setState({game:game, computer: computer, player: player});
 		}
 	}
-
+    /* run AI turn
+     * @game, current game with player/ai moves
+     * @depth, integer represents difficulty, how far down minimax do search 
+     */
 	computerTurn(game,depth) {
 		var move = this.minmax(game.slice(0),this.state.computer,depth);
 		game[move.index] = this.state.computer;
@@ -110,7 +153,12 @@ class Board extends React.Component {
 			this.setState({game:game});			
 		}
 	}
-
+    /* run minmax alorithm for AI turn
+     * @game, current game with player/ai moves
+     * @depth, integer represents difficulty, how far down minimax do search 
+     * @player,symbol (X / O) represents the player we are checking  
+     8 @return, array of moves for AI to use
+     */
 	minmax(game,player,depth) {
 		var freeSquares = this.emptyIndexies(game);
 		var checkX = this.checkWinner(game,'X');
@@ -169,7 +217,10 @@ class Board extends React.Component {
 		}
 		return moves[bestMove];
 	}
-
+    /* clears game
+     * @game, current game with player/ai moves to clear
+     * @return, empty game (new game)
+     */
 	emptyIndexies(game) {
 		return game.filter(s => s !== 'O' && s !== 'X');
 	}
@@ -197,62 +248,117 @@ class Board extends React.Component {
 	}
 	
 	render () {
-		var xHighlight = (this.state.player === 'X') ? 'inset 0 0 0 1px #C1CFDA, inset 0 0 20px #193047' : '';
-		var oHighlight = (this.state.player === 'O') ? 'inset 0 0 0 1px #C1CFDA, inset 0 0 20px #193047' : '';
-		var freeSquares = this.emptyIndexies(this.state.game.slice(0));
-		var resetDisplay = (this.state.gameOver || freeSquares.length === 0) ? ' ' : 'none';
-		var difficutly = '';
-		var color = '';
-		switch (this.state.difficulty) {
-			case 2:
-				difficutly = 'Easy';
-				color = 'success';
-				break;
-			case 3:
-				difficutly = "Medium";
-				color = 'warning';
-				break;
-			case 9: 
-				difficutly = 'Hard';
-				color = 'danger';
-				break;
-			default:
-				difficutly = 'Hard';
-				color = 'danger';
-				break;
-		}
-		return (	
-			<div className='container-fluid background'>
-	      <Dropdown size='lg' isOpen={this.state.dropdownOpen} toggle={this.diffToggle}>
-	        <DropdownToggle className='diff-drop' color={color} caret>{difficutly}</DropdownToggle>
-	        <DropdownMenu style={{background:'black'}}>
-	          <DropdownItem style={{color:'green'}} onClick={()=> this.setDifficutly(2)}>Easy</DropdownItem>
-	          <DropdownItem style={{color:'orange'}} onClick={()=> this.setDifficutly(3)}>Medium</DropdownItem>
-	          <DropdownItem style={{color:'red'}} onClick={()=> this.setDifficutly(9)}>Hard</DropdownItem>
-	        </DropdownMenu>
-	      </Dropdown>
-				<div className='scoreboard row'>
-					<div className='col-md-6 score-X' onClick={() => this.setPlayers('X')} style={{background:'red',boxShadow:xHighlight}}>
-						<span>X</span>
-						<span className='player-score'>{(this.state.score[0] === 0) ? '-' : this.state.score[0]}</span>
-					</div>
-					<div className='col-md-6 score-O' onClick={() => this.setPlayers('O')} style={{background:'yellow',boxShadow:oHighlight}}>
-						<span>O</span>
-						<span className='player-score'>{(this.state.score[1] === 0) ? '-' : this.state.score[1]}</span>
-					</div>
-				</div>
-				<div className='row game-btns' style={{display:resetDisplay}}>
-					<button className='col-md-6 reset-btn' onClick={this.resetGame}>Clear Board</button>
-					<button className='col-md-6 new-btn' onClick={this.newGame}>New Game</button>
-				</div>
-				<div className='board'>
-				{this.state.game.map((x,i)=>{
-					return <Squares key={'square-'+ i} num={i} handleClick={()=> this.handleClick(i)} value={this.state.game[i]} winRow={this.state.winRow}  />
-				})}
-				</div>
-			</div>
-		)
-	}
+        var xHighlight = (this.state.player === 'X') ? 'inset 0 0 0 1px #C1CFDA, inset 0 0 20px #193047' : '';
+        var oHighlight = (this.state.player === 'O') ? 'inset 0 0 0 1px #C1CFDA, inset 0 0 20px #193047' : '';
+        var freeSquares = this.emptyIndexies(this.state.game.slice(0));
+        var resetDisplay = (this.state.gameOver || freeSquares.length === 0) ? ' ' : 'none';
+        var difficutly = '';
+        var color = '';
+        switch (this.state.difficulty) {
+            case 2:
+                difficutly = 'Easy';
+                color = 'success';
+                break;
+            case 3:
+                difficutly = "Medium";
+                color = 'warning';
+                break;
+            case 9: 
+                difficutly = 'Hard';
+                color = 'danger';
+                break;
+            default:
+                difficutly = 'Hard';
+                color = 'danger';
+                break;
+        }
+        return (	
+            <div className='container-fluid background'>
+                <Dropdown 
+                    size='lg' 
+                    isOpen={this.state.dropdownOpen} 
+                    toggle={this.diffToggle}
+                >
+                    <DropdownToggle 
+                        className='diff-drop' 
+                        color={color} 
+                        caret>{difficutly}
+                    >
+                    </DropdownToggle>
+                    <DropdownMenu style={{background:'black'}}>
+                        <DropdownItem 
+                            style={{color:'green'}} 
+                            onClick={()=> this.setDifficutly(2)}
+                        >
+                            Easy
+                        </DropdownItem>
+                        <DropdownItem 
+                            style={{color:'orange'}} 
+                            onClick={()=> this.setDifficutly(3)}
+                        >
+                            Medium
+                        </DropdownItem>
+                        <DropdownItem 
+                            style={{color:'red'}} 
+                            onClick={()=> this.setDifficutly(9)}
+                        >
+                            Hard
+                        </DropdownItem>
+                    </DropdownMenu>
+                </Dropdown>
+                <div className='scoreboard row'>
+                    <div 
+                        className='col-md-6 score-X' 
+                        onClick={() => this.setPlayers('X')} 
+                        style={{background:'red',boxShadow:xHighlight}}
+                    >
+                        <span>X</span>
+                        <span className='player-score'>
+                            {(this.state.score[0] === 0) ? '-' : this.state.score[0]}
+                        </span>
+                    </div>
+                    <div 
+                        className='col-md-6 score-O' 
+                        onClick={() => this.setPlayers('O')} 
+                        style={{background:'yellow',boxShadow:oHighlight}}
+                    >
+                        <span>O</span>
+                        <span className='player-score'>
+                            {(this.state.score[1] === 0) ? '-' : this.state.score[1]}
+                        </span>
+                    </div>
+                </div>
+                <div 
+                    className='row game-btns' 
+                    style={{display:resetDisplay}}
+                >
+                    <button 
+                        className='col-md-6 reset-btn' 
+                        onClick={this.resetGame}
+                    >
+                        Clear Board
+                    </button>
+                    <button 
+                        className='col-md-6 new-btn' 
+                        onClick={this.newGame}
+                    >
+                        New Game
+                    </button>
+                </div>
+                <div className='board'>
+                    {this.state.game.map((x,i)=>{
+                    return <Squares 
+                                key={'square-'+ i} 
+                                num={i} 
+                                handleClick={()=> this.handleClick(i)} 
+                                value={this.state.game[i]} 
+                                winRow={this.state.winRow}  
+                            />
+                    })}
+                </div>
+            </div>
+        )
+    }
 }
 
 ReactDOM.render(
